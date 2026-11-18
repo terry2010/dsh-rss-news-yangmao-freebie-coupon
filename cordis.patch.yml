@@ -1,0 +1,7 @@
+# dsh-rss-news-yangmao-freebie-coupon bundle patch.
+# id 必须与插件 export const name 一致。
+
+- insert:
+    - id: rss-news-yangmao
+      name: 'dsh-rss-news-yangmao-freebie-coupon'
+      config: {}

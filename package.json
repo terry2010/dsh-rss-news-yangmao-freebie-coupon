@@ -1,0 +1,62 @@
+{
+  "name": "dsh-rss-news-yangmao-freebie-coupon",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "dsh companion plugin: 每日羊毛 — 炊事班羊毛/优惠情报同步、看板、订阅命中推送、投稿跟踪、羊毛日报快报供给",
+  "type": "module",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "web",
+    "cordis.patch.yml"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terry2010/dsh-rss-news-yangmao-freebie-coupon.git"
+  },
+  "homepage": "https://github.com/terry2010/dsh-rss-news-yangmao-freebie-coupon#readme",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "yangmao",
+    "deals",
+    "freebies",
+    "coupon"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "platform": "web"
+    }
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": ">=4.0.1",
+    "dsh-rss-news-daily": ">=1.1.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@types/node": "^22.0.0",
+    "dsh-rss-news-daily": "file:../dsh-rss-news-daily",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "prepublishOnly": "npm run build"
+  }
+}

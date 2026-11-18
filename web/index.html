@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="page-type" content="software">
+<meta name="theme-color" content="#151517">
+<title>每日羊毛</title>
+<link rel="stylesheet" href="/dsh-rss-news-daily/web/style.css">
+<style>
+  :root { --fz: 1; }
+  html[data-theme="light"] { color-scheme: light; }
+  html[data-theme="dark"] { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { font-size: 13px; line-height: 1.55; margin: 0; background: var(--bg); color: var(--ink); }
+  .topbar {
+    position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: var(--bg); border-bottom: .5px solid var(--line-strong);
+    flex-wrap: wrap;
+  }
+  .topbar h1 { font-size: 15px; margin: 0; }
+  .syncdot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok, #3a7); }
+  .syncdot.warn { background: var(--warn, #c80); }
+  .syncdot.err { background: var(--danger, #c33); }
+  .syncinfo { color: var(--dim); font-size: 11px; }
+  .topbar input[type=search] { width: 130px; height: 26px; }
+  .grow { flex: 1; }
+  .pubstate { color: var(--warn, #c80); font-size: 11px; }
+  .tabs { display: flex; gap: 2px; padding: 6px 12px 0; border-bottom: .5px solid var(--line-strong); flex-wrap: wrap; }
+  .tabs button { border: none; background: none; padding: 6px 10px; font-size: 12px; color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--acc); }
+  .tabs .n { font-size: 10px; color: var(--dim); margin-left: 2px; }
+  .chips { display: flex; gap: 6px; padding: 8px 12px; flex-wrap: wrap; }
+  .chips button { border: 1px solid var(--line-strong); background: none; color: var(--dim); border-radius: 12px; padding: 2px 10px; font-size: 11px; cursor: pointer; }
+  .chips button.on { color: var(--ink); border-color: var(--acc); }
+  main { padding: 10px 12px 60px; }
+  .card {
+    background: var(--panel, var(--bg)); border: .5px solid var(--line-strong);
+    border-radius: var(--r, 8px); padding: 10px 12px; margin-bottom: 8px;
+  }
+  .card.brk { border-left: 3px solid var(--danger, #c33); }
+  .card.expired { opacity: .5; }
+  .card .row1 { display: flex; gap: 8px; align-items: baseline; }
+  .card .ttl { font-size: 13px; font-weight: 600; flex: 1; }
+  .badge { font-size: 10px; padding: 1px 7px; border-radius: 9px; border: .5px solid var(--line-strong); color: var(--dim); white-space: nowrap; }
+  .badge.trust { color: var(--ok, #3a7); border-color: var(--ok, #3a7); }
+  .badge.brk { color: var(--danger, #c33); border-color: var(--danger, #c33); }
+  .badge.hitb { color: var(--acc); border-color: var(--acc); }
+  .card .sum { color: var(--dim); font-size: 12px; margin: 4px 0; }
+  .card .meta { font-size: 11px; color: var(--dim); display: flex; gap: 10px; flex-wrap: wrap; font-family: var(--mono, monospace); }
+  .card .meta .dl { color: var(--acc); }
+  .card .meta .dl.soon { color: var(--danger, #c33); font-weight: 600; }
+  .card .acts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .card .acts a, .card .acts button { font-size: 12px; }
+  .card .acts a.go { color: var(--acc); text-decoration: none; }
+  .card .acts button { border: 1px solid var(--line-strong); background: none; color: var(--dim); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+  .card .acts button.on { color: var(--ok, #3a7); border-color: var(--ok, #3a7); }
+  details.fold { margin: 14px 0 8px; }
+  details.fold summary { cursor: pointer; font-size: 13px; color: var(--dim); padding: 6px 0; }
+  .subrow, .submrow { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-bottom: .5px solid var(--line-strong); font-size: 12px; flex-wrap: wrap; }
+  .subrow .kw { flex: 1; }
+  .submrow .st { min-width: 60px; }
+  .st-new, .st-extracting { color: var(--dim); }
+  .st-pending { color: var(--warn, #c80); }
+  .st-approved { color: var(--ok, #3a7); }
+  .st-duplicated, .st-rejected, .st-failed { color: var(--danger, #c33); }
+  form.inline { display: flex; gap: 8px; padding: 8px 0; flex-wrap: wrap; }
+  form.inline input, form.inline select { height: 28px; font-size: 12px; }
+  dialog { border: .5px solid var(--line-strong); border-radius: 10px; background: var(--panel, var(--bg)); color: var(--ink); padding: 18px; width: min(420px, 92vw); }
+  dialog input, dialog textarea { width: 100%; margin: 4px 0 10px; }
+  dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
+  .empty { color: var(--dim); text-align: center; padding: 50px 0; font-size: 13px; }
+  .more { display: block; margin: 10px auto; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <h1>🐑 每日羊毛</h1>
+  <span class="syncdot" id="dot"></span>
+  <span class="syncinfo" id="syncinfo">同步中…</span>
+  <span class="pubstate" id="pubstate" hidden>⏳ 数据发布中</span>
+  <span class="grow"></span>
+  <input type="search" id="q" placeholder="搜索…">
+  <button id="btnSubmit">＋投稿</button>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="all" class="on">全部<span class="n" id="n-all"></span></button>
+  <button data-tab="ai">AI福利<span class="n" id="n-ai"></span></button>
+  <button data-tab="hits">订阅命中<span class="n" id="n-hits"></span></button>
+  <button data-tab="claimed">已领取<span class="n" id="n-claimed"></span></button>
+  <button data-tab="favorite">收藏<span class="n" id="n-favorite"></span></button>
+  <button data-tab="hidden">已隐藏<span class="n" id="n-hidden"></span></button>
+</nav>
+
+<div class="chips" id="chips"></div>
+<main id="list"></main>
+<button class="more" id="more" hidden>加载更多</button>
+
+<details class="fold" id="foldSubs">
+  <summary>订阅管理（<span id="subN">0</span> 条规则）</summary>
+  <div id="subList"></div>
+  <form class="inline" id="subForm">
+    <input name="keywords" placeholder="关键词（逗号分隔）" style="width:200px">
+    <select name="channel" id="subCh"><option value="">全部频道</option></select>
+    <button type="submit">添加订阅</button>
+  </form>
+</details>
+
+<details class="fold" id="foldSubm">
+  <summary>我的投稿（<span id="submN">0</span>）</summary>
+  <div id="submList"></div>
+  <form class="inline" id="trackForm">
+    <input name="id" placeholder="跟踪投稿：粘贴 sub_… ID" style="width:220px">
+    <button type="submit">跟踪</button>
+  </form>
+</details>
+
+<details class="fold" id="foldCfg">
+  <summary>设置</summary>
+  <form class="inline" id="cfgForm">
+    <label>apiBase <input name="apiBase" style="width:200px"></label>
+    <label>dataBase <input name="dataBase" style="width:200px"></label>
+    <label>同步间隔(s) <input name="syncSec" type="number" min="30" max="3600" style="width:70px"></label>
+    <button type="submit">保存</button>
+    <button type="button" id="btnSync">立即同步</button>
+  </form>
+  <div class="syncinfo" id="cfgInfo"></div>
+</details>
+
+<dialog id="dlgSubmit">
+  <h3 style="margin:0 0 10px">投稿羊毛</h3>
+  <form method="dialog" id="dlgForm">
+    <label>链接 *</label><input name="url" type="url" required placeholder="https://…">
+    <label>备注</label><textarea name="note" rows="2" placeholder="补充说明（可选）"></textarea>
+    <label>邮箱回执（可选）</label><input name="notifyEmail" type="email" placeholder="you@example.com">
+    <div id="dlgMsg"></div>
+    <div class="row">
+      <button value="cancel" formnovalidate>取消</button>
+      <button id="dlgOk" class="primary">提交</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/dsh-rss-news-yangmao-freebie-coupon/web/app.js"></script>
+</body>
+</html>
